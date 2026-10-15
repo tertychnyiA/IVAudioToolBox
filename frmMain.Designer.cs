@@ -524,10 +524,22 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label18.Location = new System.Drawing.Point(6, 3);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(758, 483);
+            this.label18.Size = new System.Drawing.Size(758, 420);
             this.label18.TabIndex = 0;
-            this.label18.Text = "Not available.";
+            this.label18.Text = "Batch unpack .ivaud files from a folder. Click the button below to choose a source folder and export all samples into subfolders.";
             this.label18.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // buttonBatchUnpack
+            // 
+            this.buttonBatchUnpack = new System.Windows.Forms.Button();
+            this.buttonBatchUnpack.Location = new System.Drawing.Point(6, 430);
+            this.buttonBatchUnpack.Name = "buttonBatchUnpack";
+            this.buttonBatchUnpack.Size = new System.Drawing.Size(120, 23);
+            this.buttonBatchUnpack.TabIndex = 1;
+            this.buttonBatchUnpack.Text = "Batch Unpack...";
+            this.buttonBatchUnpack.UseVisualStyleBackColor = true;
+            this.buttonBatchUnpack.Click += new System.EventHandler(this.buttonBatchUnpack_Click);
+            this.tabPageMulti.Controls.Add(this.buttonBatchUnpack);
             // 
             // buttonQuit
             // 
@@ -691,6 +703,7 @@
         private System.Windows.Forms.MainMenu mainMenuMenu;
         private System.Windows.Forms.MenuItem menuItemReplace;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
+        private System.Windows.Forms.Button buttonBatchUnpack;
     }
 }
 

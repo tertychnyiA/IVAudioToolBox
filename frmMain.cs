@@ -215,6 +215,67 @@ namespace IVAUDToolBox
             this.Cursor = Cursors.Default;            
         }
 
+        private void buttonBatchUnpack_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+
+            string srcFolder = folderBrowserDialog.SelectedPath;
+            string[] files = Directory.GetFiles(srcFolder, "*.ivaud");
+            if (files.Length == 0) {
+                MessageBox.Show("No .ivaud files found in the selected folder.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            int totalExported = 0;
+            int fileCounter = 0;
+
+            foreach (string f in files) {
+                fileCounter++;
+                this.Cursor = Cursors.WaitCursor;
+                try {
+                    string filename = Path.GetFileNameWithoutExtension(f);
+                    string outFolder = Path.Combine(srcFolder, filename);
+                    Directory.CreateDirectory(outFolder);
+
+                    // Copy to temp and load without showing the Open dialog
+                    File.Copy(f, Environment.GetEnvironmentVariable("TEMP") + "\\IVATB\\Current" + Utils.sessionID + ".tmp", true);
+                    if (!IVAUD.load(Environment.GetEnvironmentVariable("TEMP") + "\\IVATB\\Current" + Utils.sessionID + ".tmp")) {
+                        Debug.WriteLine("Failed to load: " + f);
+                        continue;
+                    }
+
+                    if (!IVAUD.readType()) {
+                        Debug.WriteLine("Failed to detect type for: " + f);
+                        IVAUD.close();
+                        continue;
+                    }
+
+                    // Populate listView for this file
+                    if (!openFile()) { IVAUD.close(); continue; }
+
+                    // If the file contains multi-channel types and not implemented, skip
+                    if ((IVAUD.fileType == IVAUD.IVAUDType.Multi) || (IVAUD.fileType == IVAUD.IVAUDType.MultiC)) {
+                        MessageBox.Show(this, "File '" + Path.GetFileName(f) + "' is multi-channel. Multi-channel exporting is not implemented. Skipping.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        IVAUD.close();
+                        continue;
+                    }
+
+                    for (int i = 0; i < listView.Items.Count; i++) {
+                        string outPath = Path.Combine(outFolder, listView.Items[i].SubItems[1].Text + ".wav");
+                        if (exportSample(outPath, i)) totalExported++;
+                        Application.DoEvents();
+                    }
+
+                    IVAUD.close();
+                } catch (Exception ex) {
+                    Debug.WriteLine("Error exporting file " + f + ": " + ex.Message);
+                }
+                this.Cursor = Cursors.Default;
+            }
+
+            MessageBox.Show("Batch export finished. Exported " + totalExported.ToString() + " samples from " + files.Length.ToString() + " file(s).", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
         private bool exportSample(string path, int index)
         {
             if (IVAUD.fileType == IVAUD.IVAUDType.Single) {
